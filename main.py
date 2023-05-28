@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Request, Response,Depends, HTTPException
+from fastapi import FastAPI, Request, Response, Depends, HTTPException
 from tests2 import *
-from fastapi.responses import PlainTextResponse, FileResponse,HTMLResponse, JSONResponse
-from fastapi import Response, Depends, HTTPException, FastAPI, Form 
+from fastapi.responses import PlainTextResponse, FileResponse, HTMLResponse, JSONResponse
+from fastapi import Response, Depends, HTTPException, FastAPI, Form
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import pandas as pd
 import os
@@ -11,12 +11,8 @@ from starlette import responses
 app = FastAPI()
 security = HTTPBasic()
 
-# users = {
-#     "Admin": "password123",
-#     "Silvana": "password456"
-# }
 db_host = os.environ.get("DB_HOST")
-db_port = os.environ.get("DB_PORT")
+db_port = int(os.environ.get("DB_PORT"))
 db_user = os.environ.get("DB_USER")
 db_password = os.environ.get("DB_PASSWORD")
 db_name = os.environ.get("DB_NAME")
@@ -29,23 +25,12 @@ def home():
 
 sessions = {}
 
-#@app.get("/login")
-#async def login_form():
-    #return 
-"""
-        <form method="post">
-        <input type="text" name="username" placeholder="Enter your username"><br>
-        <input type="password" name="password" placeholder="Enter your password"><br>
-        <button type="submit">Login</button>
-        </form>
-    """
-
 @app.post("/login")
 async def login(credentials: HTTPBasicCredentials = Depends(security)):
-    #Estableciendo conexión con la base de datos
+    # Estableciendo conexión con la base de datos
     conexion = pymysql.connect(
         host=db_host,
-        port=int(db_port),
+        port=db_port,
         user=db_user,
         password=db_password,
         database=db_name
@@ -56,19 +41,20 @@ async def login(credentials: HTTPBasicCredentials = Depends(security)):
     cursor.execute(query)
 
     df = pd.read_sql_query(query, conexion)
-    
+
     conexion.commit()
     conexion.close()
 
     username = credentials.username
     password = credentials.password
 
-    #Chequeo de usuario y contraseña válido
+    # Chequeo de usuario y contraseña válido
     if username in df['usuario'].values and password == df.loc[df['usuario'] == username, 'contraseña'].values[0]:
         sessions[username] = True
         return {"Message": "Login successful"}
     else:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
+
 
 
 @app.get("/network_map")
