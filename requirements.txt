@@ -1,0 +1,12 @@
+PIP
+fastapi
+pandas
+uvicorn	
+pymysql
+starlette
+python-nmap
+psutil
+sockets
+lib-platform
+speedtest
+scapy
