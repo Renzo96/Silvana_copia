@@ -5,7 +5,8 @@ from fastapi import Response, Depends, HTTPException, FastAPI, Form
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import pandas as pd
 import os
-import pymysql
+# import pymysql
+import mysql.connector
 from starlette import responses
 
 app = FastAPI()
@@ -28,13 +29,17 @@ sessions = {}
 @app.post("/login")
 async def login(credentials: HTTPBasicCredentials = Depends(security)):
     # Estableciendo conexión con la base de datos
-    conexion = pymysql.connect(
+    try:
+        conexion = mysql.connector.connect(
         host=db_host,
         port=db_port,
         user=db_user,
         password=db_password,
         database=db_name
     )
+        print('Conexión exitosa a la base de datos')
+    except mysql.connector.Error as error:
+        print('Error al conectar a la base de datos:', error)
     cursor = conexion.cursor()
 
     query = 'SELECT * FROM USUARIOS'
@@ -162,4 +167,4 @@ async def logout(credentials: HTTPBasicCredentials = Depends(security)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0" , port=3306)
+    uvicorn.run(app, host="0.0.0.0" , port=8000)
